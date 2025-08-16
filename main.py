@@ -35,14 +35,14 @@ async def mute_handler(message: types.Message):
     await message.reply(f"{message.reply_to_message.from_user.mention()} سکوت شد.")
 
 # نمونه فرمان وضعیت هوا
-@dp.message(Command("weather"))
-async def weather_handler(message: types.Message):
-    city = message.get_args()
-    if not city:
-        await message.reply("لطفاً نام شهر را وارد کنید: /weather Berlin")
-        return
-    result = await external_apis.get_weather(city)
-    await message.reply(result)
+# @dp.message(Command("weather"))
+# async def weather_handler(message: types.Message):
+#     city = message.get_args()
+#     if not city:
+#         await message.reply("لطفاً نام شهر را وارد کنید: /weather Berlin")
+#         return
+#     result = await external_apis.get_weather(city)
+#     await message.reply(result)
 
 async def main():
     await dp.start_polling(bot)
