@@ -19,21 +19,21 @@ scheduler_service: SchedulerService | None = None  # در main مقداردهی 
 
 @router.message(Command("panel"))
 async def admin_panel(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("این دستور فقط برای ادمین‌هاست.")
     await msg.reply("پنل ادمین:", reply_markup=admin_panel_kb(msg.chat.id))
 
 @router.message(Command("ban"))
 async def ban_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False :
         return await msg.reply("ادمین نیستید.")
-    target_id = msg.reply_to_message.from_user.id if msg.reply_to_message else None
+    target_id = msg.reply_to_message.from_user.id
+    # if not target_id:
+    #     parts = msg.text.split()
+    #     if len(parts) == 2 and parts[1].isdigit():
+    #         target_id = int(parts[1])
     if not target_id:
-        parts = msg.text.split()
-        if len(parts) == 2 and parts[1].isdigit():
-            target_id = int(parts[1])
-    if not target_id:
-        return await msg.reply("ریپلای کنید یا user_id بدهید.")
+        return await msg.reply("یک پیام از کاربر ریپلای کنید")
     try:
         await bot.ban_chat_member(msg.chat.id, target_id)
         await msg.reply("کاربر بن شد.")
@@ -42,7 +42,7 @@ async def ban_cmd(msg: Message, bot: Bot):
 
 @router.message(Command("unban"))
 async def unban_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
     parts = msg.text.split()
     if len(parts) != 2 or not parts[1].isdigit():
@@ -55,13 +55,13 @@ async def unban_cmd(msg: Message, bot: Bot):
 
 @router.message(Command("mute"))
 async def mute_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
     parts = msg.text.split()
     target_id = msg.reply_to_message.from_user.id if msg.reply_to_message else (int(parts[1]) if len(parts)>=2 and parts[1].isdigit() else None)
     minutes = (int(parts[2]) if len(parts)>=3 and parts[2].isdigit() else settings.MUTE_MINUTES_ON_MAX_WARN)
     if not target_id:
-        return await msg.reply("ریپلای کنید یا user_id بدهید.")
+        return await msg.reply("یک پیام از کاربر ریپلای کنید")
     until_date = datetime.now(timezone.utc) + timedelta(minutes=minutes)
     perms = ChatPermissions(can_send_messages=False)
     try:
@@ -72,12 +72,12 @@ async def mute_cmd(msg: Message, bot: Bot):
 
 @router.message(Command("unmute"))
 async def unmute_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
     parts = msg.text.split()
     target_id = msg.reply_to_message.from_user.id if msg.reply_to_message else (int(parts[1]) if len(parts)==2 and parts[1].isdigit() else None)
     if not target_id:
-        return await msg.reply("ریپلای کنید یا user_id بدهید.")
+        return await msg.reply("یک پیام از کاربر ریپلای کنید")
     perms = ChatPermissions(
         can_send_messages=True, can_send_audios=True, can_send_documents=True,
         can_send_photos=True, can_send_videos=True, can_send_voice_notes=True,
@@ -91,7 +91,7 @@ async def unmute_cmd(msg: Message, bot: Bot):
 
 @router.message(Command("purge"))
 async def purge_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
     if not msg.reply_to_message:
         return await msg.reply("برای پاکسازی، روی اولین پیام ریپلای کنید و /purge بفرستید.")
@@ -108,7 +108,7 @@ async def purge_cmd(msg: Message, bot: Bot):
 
 @router.message(Command("schedule"))
 async def schedule_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
     try:
         _, date_s, time_s, *text_parts = msg.text.split()
@@ -126,9 +126,9 @@ async def schedule_cmd(msg: Message, bot: Bot):
 
 @router.message(Command("warn"))
 async def warn_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
-    target_id = msg.reply_to_message.from_user.id if msg.reply_to_message else None
+    target_id = msg.reply_to_message.from_user.id #if msg.reply_to_message else None
     if not target_id:
         return await msg.reply("روی پیام کاربر ریپلای کنید.")
     reason = " ".join(msg.text.split()[1:]) if len(msg.text.split()) > 1 else "نقض قوانین"
@@ -173,7 +173,7 @@ async def syncfrom_cmd(msg: Message, bot: Bot):
     همگام‌سازی تنظیمات از یک گروه دیگر: /syncfrom other_chat_id
     (باید ادمین هر دو گروه باشید)
     """
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
     parts = msg.text.split()
     if len(parts) != 2:
@@ -193,6 +193,6 @@ async def syncfrom_cmd(msg: Message, bot: Bot):
 
 @router.message(Command("settings"))
 async def settings_cmd(msg: Message, bot: Bot):
-    if not await is_admin(bot, msg.chat.id, msg.from_user.id):
+    if  is_admin(bot, msg.chat.id, msg.from_user.id) == False:
         return await msg.reply("ادمین نیستید.")
     await msg.reply("تنظیمات:", reply_markup=settings_kb(msg.chat.id))
